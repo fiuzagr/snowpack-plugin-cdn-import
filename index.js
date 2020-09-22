@@ -1,25 +1,24 @@
-const { default: traverseAst } = require('@babel/traverse');
 const { transformAsync } = require('@babel/core');
 
-const plugin = require('./babel-plugin.js');
+const babelPlugin = require('./babel-plugin.js');
+const generateImports = require('./generate-imports.js');
 
-// Snowpack Plugin
-module.exports = function (snowpackConfig, pluginOptions) {
-  
-  const extensions = pluginOptions.extensions || ['.js', '.jsx','.tsx', '.ts']; // extensions.
-  const dev = pluginOptions.dev || false; // for debugging improvements in development.
-  const imports = pluginOptions.imports || {};
+const snowpackPlugin = (_, pluginOptions) => {
+  const extensions = pluginOptions.extensions || ['.js', '.jsx', '.tsx', '.ts'];
+  const enableInDevMode = pluginOptions.enableInDevMode || false;
+  const imports = generateImports(pluginOptions);
 
   return {
     async transform(options) {
-      
       const { contents, filePath, isDev, fileExt } = options;
 
-      if (!(isDev === true && dev === true) &&
-        extensions.includes(fileExt.toLowerCase())) {
+      if (
+        ((isDev && enableInDevMode) || !isDev) &&
+        extensions.includes(fileExt.toLowerCase())
+      ) {
         const result = await transformAsync(contents, {
           filename: filePath,
-          plugins: [plugin(imports)],
+          plugins: [babelPlugin({ imports })],
           cwd: process.cwd(),
           ast: false,
         });
@@ -29,3 +28,5 @@ module.exports = function (snowpackConfig, pluginOptions) {
     },
   };
 };
+
+module.exports = snowpackPlugin;
