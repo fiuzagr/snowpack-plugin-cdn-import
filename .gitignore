@@ -1,8 +1,11 @@
 *
 .*
 
+!.eslintrc.js
 !.gitignore
+!.prettierrc.js
 !babel-plugin.js
+!generate-imports.js
 !index.js
 !LICENSE
 !package-lock.json
